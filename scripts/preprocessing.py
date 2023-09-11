@@ -49,7 +49,7 @@ def calculate_news_metrics(df: pd.DataFrame):
     article_count = df.groupby('date').count()
     
     #count(distinct *) of unique publishers
-    publisher_count = df.groupby('date')['publisher_x'].nunique()
+    publisher_count = df.groupby('date')['publisher'].nunique()
     output_df = pd.merge(article_count,publisher_count,on='date')
     
     #percent_negative bounds -1:-.33
@@ -82,6 +82,11 @@ def calculate_crises_metrics(df: pd.DataFrame):
 def consolidate_data(southsudan: pd.DataFrame, crisis: pd.DataFrame):
     southsudan['date'] = southsudan['date'].astype('str')
     crisis['date'] = crisis['date'].astype('str')
-    
     output_df = southsudan.merge(crisis, on='date')
+    if output_df['country'] == 'South Sudan':
+        output_df['country_code'] = 1
+    else:
+        output_df['country_code'] = 2
+        
+    
     return(output_df)
