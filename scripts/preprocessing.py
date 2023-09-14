@@ -1,6 +1,7 @@
 #Import  libraries
 import pandas as pd
 from textblob import TextBlob
+import numpy as np
 
 # Backfill values for "ipc" column and save file to csv
 def backfill_ipc(df: pd.DataFrame) -> pd.DataFrame:
@@ -83,10 +84,8 @@ def consolidate_data(southsudan: pd.DataFrame, crisis: pd.DataFrame):
     southsudan['date'] = southsudan['date'].astype('str')
     crisis['date'] = crisis['date'].astype('str')
     output_df = southsudan.merge(crisis, on='date')
-    if output_df['country'] == 'South Sudan':
-        output_df['country_code'] = 1
-    else:
-        output_df['country_code'] = 2
+    output_df['country_code'] = np.where(output_df['country'].astype('str') == 'South Sudan', 1, 2)
+
         
     
     return(output_df)

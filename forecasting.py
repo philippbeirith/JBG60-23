@@ -30,10 +30,11 @@ dataset: pd.DataFrame = preprocessing.consolidate_data(df_southsudan, df_food_cr
 
 ### Feature Selection ###
 #test for longevity
-dataset_val = dataset[dataset['date'] >= '2023-01-01']
+#dataset_val = dataset[dataset['date'] >= '2023-01-01']
 
 dataset.drop(columns=['date', 'district', 'country', 'year_month', 'ha'], inplace = True)
-X_train, X_test, y_train, y_test = train_test_split(dataset.loc[:, dataset.columns != 'ipc'], dataset['ipc'], test_size=0.2, random_state=1)
+
+X_train, X_test, y_train, y_test = train_test_split(dataset.drop(columns=['ipc']), dataset['ipc'], test_size=0.2, random_state=1)
 
 # Create and fit the RandomForestClassifier
 rf_classifier = RandomForestClassifier(n_estimators=1000, random_state=23)
@@ -42,10 +43,14 @@ rf_classifier.fit(X_train, y_train)
 # Use SelectFromModel with the fitted classifier
 sel = SelectFromModel(rf_classifier)
 X_train = sel.transform(X_train)
+X_test = sel.transform(X_test)
+print(X_train.shape)
+print(X_train.shape)
 
 ### Train Model ###
-rf = RandomForestRegressor(n_estimators = 1000, random_state = 23, max_depth = 5)
+rf = RandomForestClassifier(n_estimators = 1000, random_state = 23, max_depth = 5)
 rf.fit(X_train, y_train)
+
 
 ### Evaluation ###
 predictions = rf.predict(X_test)
