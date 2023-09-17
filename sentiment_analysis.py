@@ -10,4 +10,5 @@ def sentiment_analysis(df: pd.DataFrame, column: str) -> pd.DataFrame:
     df["sentiment"] = df["sentiment"].apply(lambda x: 1 if x > 0 else 0 if x == 0 else -1)
     df.to_csv("data/all_africa_southsudan.csv", index=False)
 
+# Apply sentiment analysis to the "paragraphs" column
 sentiment_analysis(df_all_africa, "paragraphs")
