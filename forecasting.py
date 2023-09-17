@@ -22,11 +22,11 @@ df_food_crises_cleaned = preprocessing.backfill_ipc(df_food_crises_cleaned)
 df_southsudan = preprocessing.sentiment_analysis(df_southsudan, 'paragraphs')
 
 #Augment
-#df_food_crises_cleaned = preprocessing.calculate_crises_metrics(df_food_crises_cleaned)
+df_food_crises_cleaned = preprocessing.calculate_crises_metrics(df_food_crises_cleaned)
 df_southsudan = preprocessing.calculate_news_metrics(df_southsudan).reset_index()
 
 #Consolidate
-dataset: pd.DataFrame = preprocessing.consolidate_data(df_southsudan, df_food_crises_cleaned)
+dataset: pd.DataFrame = preprocessing.consolidate_data(df_southsudan, df_food_crises_cleaned).dropna()
 
 ### Feature Selection ###
 #test for longevity
