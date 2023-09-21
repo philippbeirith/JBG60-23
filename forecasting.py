@@ -35,6 +35,8 @@ dataset=dataset[dataset['ipc_delta']!=0]
 
 dataset.drop(columns=['date', 'district', 'country', 'year_month', 'ha'], inplace = True)
 
-model_lead_1 = evaluation.test_random_forest_classification_performance(dataset.drop(columns=['ipc_lead_1']), dataset['ipc_lead_1'], test_size=0.2, random_state=23)
-model_lead_3 = evaluation.test_random_forest_classification_performance(dataset.drop(columns=['ipc_lead_3']), dataset['ipc_lead_3'], test_size=0.2, random_state=23)
-model_lead_6 = evaluation.test_random_forest_classification_performance(dataset.drop(columns=['ipc_lead_6']), dataset['ipc_lead_6'], test_size=0.2, random_state=23)
+model_lead_1 = evaluation.test_random_forest_classification_performance(dataset.drop(columns=['ipc_lead_1', 'ipc_lead_3', 'ipc_lead_6']), dataset['ipc_lead_1'], test_size=0.2, random_state=23)
+print('############################################################')
+model_lead_3 = evaluation.test_random_forest_classification_performance(dataset.drop(columns=['ipc_lead_1', 'ipc_lead_3', 'ipc_lead_6']), dataset['ipc_lead_3'], test_size=0.2, random_state=23)
+print('############################################################')
+model_lead_6 = evaluation.test_random_forest_classification_performance(dataset.drop(columns=['ipc_lead_1', 'ipc_lead_3', 'ipc_lead_6']), dataset['ipc_lead_6'], test_size=0.2, random_state=23)

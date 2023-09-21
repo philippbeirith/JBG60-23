@@ -28,6 +28,12 @@ def test_random_forest_classification_performance(X, y, test_size=0.2, random_st
 
     # Use SelectFromModel with the fitted classifier
     sel = SelectFromModel(rf_classifier)
+    
+    #Print out selected rows
+    feature_idx = sel.get_support()
+    feature_name = X_train.columns[feature_idx]
+    print(feature_name)
+    
     X_train = sel.transform(X_train)
     X_test = sel.transform(X_test)
     print(X_train.shape)
