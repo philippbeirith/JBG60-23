@@ -1,8 +1,3 @@
-import pandas as pd
-
-# Read data into DataFrame
-df = pd.read_csv("data/food_crises_cleaned.csv")
-
 # Calculates delta values for the ipc column based on district and fills in nan values with 0
 def calculate_delta(df: pd.DataFrame, col: str) -> pd.DataFrame:
     df[f"{col}_delta"] = df.groupby("district")[col].diff()
@@ -105,28 +100,6 @@ def calculate_et_bool(df: pd.DataFrame) -> pd.DataFrame:
     df["et_bool"] = df["et_bool"].astype(int)
     
     return df
-
-df = calculate_delta(df, col = "ipc")
-
-df = calculate_months_since_change(df, col = "ipc")
-
-cols = ["ipc", "ndvi_mean", "rain_mean", "et_mean", "food_price_idx"] 
-
-df = apply_lag(df, col_list = cols, lag = 1)
-df = apply_lag(df, col_list = cols, lag = 3)
-df = apply_lag(df, col_list = cols, lag = 6)
-
-
-df = apply_lead(df, col_list = cols, lead = 1)
-df = apply_lead(df, col_list = cols, lead = 3)
-df = apply_lead(df, col_list = cols, lead = 6)
-
-df = apply_rolling_avg(df, col_list = cols, window = 3)
-df = apply_rolling_std(df, col_list = cols, window = 3)
-
-df = calculate_rain_bool(df)
-df = calculate_ndvi_bool(df)
-df = calculate_et_bool(df)
 
 
 
