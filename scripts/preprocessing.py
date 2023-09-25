@@ -39,6 +39,12 @@ def calculate_months_since_change(df: pd.DataFrame, col: str) -> pd.DataFrame:
 
     return df
 
+def next_month_change(df):
+    df['next_value'] = df.groupby('district_code')['ipc'].shift(-1)
+    df['next_month_change'] = (df['ipc'] != df['next_value']).astype(int)
+    df.drop(columns=['next_value'], inplace=True)
+    return df
+
 # Calculates the lag value for a given list of columns based on district
 def apply_lag(df: pd.DataFrame, col_list: list, lag: int) -> pd.DataFrame:
 
@@ -116,15 +122,75 @@ def sentiment_analysis(df: pd.DataFrame, column: str) -> pd.DataFrame:
     df["sentiment"] = df[column].apply(lambda x: TextBlob(x).sentiment.polarity)
     df["sentiment"] = df["sentiment"].apply(lambda x: 1 if x > 0 else 0 if x == 0 else -1)
     return(df)
+
+# This helper function was taken from the 'predicting' jupyter notebook from https://github.com/GielJW/JBG060-DC3-23-24-public/tree/main
+def create_lag_df(df, columns, lag, difference=False, rolling=None, dropna=False):
+    '''
+    Function to add lagged colums to dataframe
+    
+    Inputs:
+        df - Dataframe
+        columns - List of columns to create lags from
+        lag - The number of timesteps (in months for the default data) to lag the variable by
+        difference - Whether to take the difference between each observation as new column
+        rolling - The size of the rolling mean window, input None type to not use a rolling variable
+        dropna - Whether to drop NaN values
+        
+    Output:
+        df - Dataframe with the lagged columns added
+    '''
+    
+    for column in columns:
+        col = df[column].unstack()
+        if rolling:
+            col = col.rolling(rolling).mean()
+        if difference:
+            col = col.diff()
+        if dropna:
+            col = col.dropna(how='any')
+        df[f"{column}_lag_{lag}"] = col.shift(lag).stack()
+    return df
+
+#This functions aims to quantify and parameterize the news article dataset such that it can be used in random forest.
+def calculate_news_metrics(df: pd.DataFrame):
+    #The final version of this dataset needs to be an aggregate per month
+    
+    #count(*) of all articles in a month
+    df['date'] = df['date'].str[:7]
+    article_count = df.groupby('date').count()
+    #article_count = df.groupby(pd.Grouper(key='date', freq='M')).count()
+    article_count = article_count.rename(columns={'title':'article_count'})['article_count'] 
+    print(article_count)
+    #count(distinct *) of unique publishers
+    publisher_count = df.groupby('date')['publisher'].nunique()
+    output_df = pd.merge(article_count,publisher_count,on='date')
+    
+    #percent_negative bounds -1:-.33
+    #percent_negative = publisher_count
+    #output_df = pd.merge(output_df,percent_negative,on='date')
+    
+    #percent_neutral bounds -.33:.33
+    #percent_neutral = publisher_count
+    #output_df = pd.merge(output_df,percent_neutral,on='date')
+    
+    #percent_positive bound .34:1
+    #percent_positive = publisher_count
+    #output_df = pd.merge(output_df,percent_positive,on='date')
+    
+    #nlp to be added later
+    
+    return(output_df)
     
 def calculate_crises_metrics(df: pd.DataFrame):
-
     #Add crisis level delta (if changed, then by how many levels?)
     df = calculate_delta(df, col = "ipc")
 
+    
     #Add 'months_since_change' 
     df = calculate_months_since_change(df, col = "ipc")
-
+    
+    #Add a tag for when the delta changes in the next entry
+    df = next_month_change(df)
     #Add metrics for things like rain or price (declining trend, higher or lower, lags, rolling averages)
     df = calculate_rain_bool(df)
     df = calculate_ndvi_bool(df)
@@ -136,6 +202,7 @@ def calculate_crises_metrics(df: pd.DataFrame):
     df = apply_lag(df, col_list = cols, lag = 3)
     df = apply_lag(df, col_list = cols, lag = 6)
     
+    
     df = apply_lead(df, col_list = cols, lead = 1)
     df = apply_lead(df, col_list = cols, lead = 3)
     df = apply_lead(df, col_list = cols, lead = 6)
@@ -146,11 +213,57 @@ def calculate_crises_metrics(df: pd.DataFrame):
     df = calculate_rain_bool(df)
     df = calculate_ndvi_bool(df)
     df = calculate_et_bool(df)
-
     return(df)
 
-#This consolidates the food_crises metrics and all_africa_southsudan dataset, ready to be fed into the model.
-def consolidate_data(summary: pd.DataFrame, crisis: pd.DataFrame):
+#This section prepares the nlp data
+def bert_prep(df):
+    # Convert the 'date' column to a datetime object
+    df['date'] = pd.to_datetime(df['date'])
+    
+    # Extract year and month from the 'date' column
+    df['year'] = df['date'].dt.year
+    df['month'] = df['date'].dt.month
+    
+    # Group by year, month, and category and count the number of articles
+    grouped = df.groupby(['year', 'month', 'predictions'])['summary'].count().reset_index()
+    grouped['date'] = pd.to_datetime(grouped['year'].astype(str) + '-' + grouped['month'].astype(str) + '-01')
 
-    output_df = pd.merge(summary, crisis, how='left', on=['date','district'])
+    # Pivot the table to have categories as columns and calculate the proportion
+    pivot_table = pd.pivot_table(grouped, values='summary', index=['date'], columns='predictions', fill_value=0)
+    pivot_table = pivot_table.div(pivot_table.sum(axis=1), axis=0).reset_index()
+    
+    
+    return pivot_table
+
+def classification_prep(df, col):
+    # Convert the 'date' column to a datetime object
+    df['date'] = pd.to_datetime(df['date'])
+    
+    grouped = df.groupby(['date', col])['summary'].count().reset_index()
+    grouped['date'] = pd.to_datetime(grouped['date'].dt.year.astype(str) + '-' + grouped['date'].dt.month.astype(str) + '-01')
+    
+    pivot_table = pd.pivot_table(grouped, values='summary', index=['date'], columns=col, fill_value=0)
+    pivot_table = pivot_table.div(pivot_table.sum(axis=1), axis=0).reset_index()
+    
+    return(pivot_table)
+
+
+#This consolidates the food_crises metrics and all_africa_southsudan dataset, ready to be fed into the model.
+def consolidate_data(southsudan: pd.DataFrame, crisis: pd.DataFrame, nlp):
+    crisis['date'] = crisis['date'].astype('str')
+    crisis['date'] = crisis['date'].str[:7]
+    southsudan['date'] = southsudan['date'].astype('str')
+    output_df = southsudan.merge(crisis, on='date')
+    output_df['country_code'] = np.where(output_df['country'].astype('str') == 'South Sudan', 1, 2)
+    
+    if nlp is not None and isinstance(nlp, pd.DataFrame):
+        nlp['date'] = nlp['date'].astype('str')
+        nlp['date'] = nlp['date'].str[:7]
+        output_df=output_df.merge(nlp, on='date')
+        
     return(output_df)
+
+
+
+
+

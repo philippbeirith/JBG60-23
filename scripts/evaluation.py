@@ -23,7 +23,7 @@ def test_random_forest_classification_performance(X, y, test_size=0.2, random_st
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
 
     # Create and fit the RandomForestClassifier
-    rf_classifier = RandomForestClassifier(n_estimators=1000, random_state=23)
+    rf_classifier = RandomForestClassifier(n_estimators=5000, random_state=23)
     rf_classifier.fit(X_train, y_train)
 
     # Use SelectFromModel with the fitted classifier
@@ -40,7 +40,7 @@ def test_random_forest_classification_performance(X, y, test_size=0.2, random_st
     print(X_train.shape)
 
     ### Train Model ###
-    rf = RandomForestClassifier(n_estimators = 1000, random_state = 23, max_depth = 5)
+    rf = RandomForestClassifier(n_estimators = 5000, random_state = 23, max_depth = 7)
     rf.fit(X_train, y_train)
 
     # Make predictions
