@@ -30,7 +30,7 @@ df_bert = preprocessing.bert_prep(df_bert)
 df_classifications = preprocessing.classification_prep(df_classifications, 'topics_7')
 
 #Consolidate
-dataset: pd.DataFrame = preprocessing.consolidate_data(df_southsudan, df_food_crises_cleaned, None)
+dataset: pd.DataFrame = preprocessing.consolidate_data(df_southsudan, df_food_crises_cleaned, df_classifications)
 
 #dataset = dataset[dataset['next_month_change']== 1].dropna()
 dataset.drop(columns=['date', 'district', 'country', 'year_month', 'ha', 'next_month_change'], inplace = True)

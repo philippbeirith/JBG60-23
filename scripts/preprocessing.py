@@ -231,7 +231,7 @@ def bert_prep(df):
     # Pivot the table to have categories as columns and calculate the proportion
     pivot_table = pd.pivot_table(grouped, values='summary', index=['date'], columns='predictions', fill_value=0)
     pivot_table = pivot_table.div(pivot_table.sum(axis=1), axis=0).reset_index()
-    
+    pivot_table = pivot_table.fillna(0)
     
     return pivot_table
 
@@ -244,7 +244,7 @@ def classification_prep(df, col):
     
     pivot_table = pd.pivot_table(grouped, values='summary', index=['date'], columns=col, fill_value=0)
     pivot_table = pivot_table.div(pivot_table.sum(axis=1), axis=0).reset_index()
-    
+    pivot_table = pivot_table.fillna(0)
     return(pivot_table)
 
 
