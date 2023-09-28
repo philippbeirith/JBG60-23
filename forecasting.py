@@ -6,7 +6,6 @@ import pandas as pd
 from scripts import preprocessing
 from scripts import evaluation
 
-
 ### Begin with pre processing ###
 # Read data into DataFrame
 df_food_crises_cleaned: pd.DataFrame = pd.read_csv("data/food_crises_cleaned.csv")
@@ -15,7 +14,6 @@ df_southsudan: pd.DataFrame = pd.read_csv("data/all_africa_southsudan.csv")
 df_bert: pd.DataFrame = pd.read_csv("data/bert_output.csv")
 #jason
 df_classifications: pd.DataFrame = pd.read_csv("data/Jason_articles_with_classifications.csv")
-
 
 #Modify datasets
 df_food_crises_cleaned = preprocessing.backfill_ipc(df_food_crises_cleaned)

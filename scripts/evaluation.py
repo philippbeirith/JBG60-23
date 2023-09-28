@@ -1,4 +1,5 @@
-import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_score,
                              roc_auc_score, classification_report, confusion_matrix, log_loss)
@@ -70,6 +71,15 @@ def test_random_forest_classification_performance(X, y, test_size=0.2, random_st
     print(confusion_matrix(y_test, y_pred))
 
     #print(f"\nLog Loss: {log_loss(y_test, y_pred_prob)}")
+
+    importances = rf.feature_importances_
+    indices = np.argsort(importances)
+    features = X.columns
+    plt.title('Feature Importances')
+    plt.barh(range(len(indices)), importances[indices], color='g', align='center')
+    plt.yticks(range(len(indices)), [features[i] for i in indices])
+    plt.xlabel('Relative Importance')
+    plt.show()
 
     return rf
 
