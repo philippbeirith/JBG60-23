@@ -31,6 +31,9 @@ df_classifications = preprocessing.classification_prep(df_classifications, 'topi
 dataset: pd.DataFrame = preprocessing.consolidate_data(df_southsudan, df_food_crises_cleaned, df_bert)
 
 #dataset = dataset[dataset['next_month_change']== 1].dropna()
+#Limit the data to be < 2015
+#dataset = dataset[dataset['date'] <= '2015-01-01']
+
 dataset.drop(columns=['date', 'district', 'country', 'year_month', 'ha', 'next_month_change'], inplace = True)
 dataset.columns = dataset.columns.astype(str)
 dataset=dataset.dropna()

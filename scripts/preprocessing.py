@@ -233,6 +233,9 @@ def bert_prep(df):
     pivot_table = pivot_table.div(pivot_table.sum(axis=1), axis=0).reset_index()
     pivot_table = pivot_table.fillna(0)
     
+    pivot_table.columns = ['nlp_' + str(col) if col != 'date' else col for col in pivot_table.columns]
+
+    
     return pivot_table
 
 def classification_prep(df, col):
@@ -245,6 +248,10 @@ def classification_prep(df, col):
     pivot_table = pd.pivot_table(grouped, values='summary', index=['date'], columns=col, fill_value=0)
     pivot_table = pivot_table.div(pivot_table.sum(axis=1), axis=0).reset_index()
     pivot_table = pivot_table.fillna(0)
+    
+    pivot_table.columns = ['nlp_' + str(col) if col != 'date' else col for col in pivot_table.columns]
+
+    
     return(pivot_table)
 
 
