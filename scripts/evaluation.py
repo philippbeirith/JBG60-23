@@ -63,9 +63,9 @@ def test_random_forest_classification_performance(X, y, test_size=0.2, random_st
     #X_test = sel.transform(X_test)
     print(X_train.shape)
     print(X_train.shape)
-
-    print('kfold mean accuracy')
-    print(np.mean(cross_val_score(rf, X_train, y_train, cv=10)))
+    
+    kfold_mean_accuracy = np.mean(cross_val_score(rf, X_train, y_train, cv=10))
+    print('kfold mean accuracy: '+str(kfold_mean_accuracy))
     
     rf.fit(X_train, y_train)
     # Make predictions
