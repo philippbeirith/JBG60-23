@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_score,
@@ -96,6 +97,23 @@ def test_random_forest_classification_performance(X, y, test_size=0.2, random_st
 
     #print(f"\nLog Loss: {log_loss(y_test, y_pred_prob)}")
 
+
+    # Calculate accuracy per column 'district'
+    unique_districts = X_test['district_code'].unique()
+    district_accuracies = {}  # Store accuracy per district in a dictionary
+    for district in unique_districts:
+        district_mask = X_test['district_code'] == district
+        district_y_true = y_test[district_mask]
+        district_y_pred = y_pred[district_mask]
+        district_accuracy = accuracy_score(district_y_true, district_y_pred)
+        print(f"Accuracy for District {district}: {district_accuracy}")
+        district_accuracies[district] = district_accuracy
+    
+    # Create a DataFrame to store the accuracy rates
+    district_accuracy = pd.DataFrame(list(district_accuracies.items()), columns=['District', 'Accuracy'])
+
+    
+
     importances = rf.feature_importances_
     indices = np.argsort(importances)
     features = X.columns
@@ -105,5 +123,5 @@ def test_random_forest_classification_performance(X, y, test_size=0.2, random_st
     plt.xlabel('Relative Importance')
     plt.show()
 
-    return rf
+    return rf, district_accuracy
 
