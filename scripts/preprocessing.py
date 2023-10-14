@@ -254,9 +254,45 @@ def classification_prep(df, col):
     
     return(pivot_table)
 
+def grouped_prep(df, ipc):
+    merged_df = df.merge(ipc, left_on=['location_new', 'date'], right_on=['district', 'year_month'], how='left')
+    
+    if 'date' not in merged_df.columns:
+        merged_df.rename(columns={'date_x': 'date'}, inplace=True)
+    
+    merged_df['unmatched'] = merged_df['district'].isna()
+    
+    #unmatched = merged_df[merged_df['unmatched'] == True].groupby(['date', 'category']).count().reset_index()
+    matched = merged_df[merged_df['unmatched'] == False].groupby(['date', 'category', 'district']).count().reset_index()
+    
+    #unmatched_pivot = unmatched.pivot(index='date', columns='category', values='summary').reset_index()
+    #unmatched_pivot.fillna(0, inplace=True)
+    
+    matched_pivot = matched.pivot_table(index=['date', 'district'], columns='category', values='summary').reset_index()
+    matched_pivot.fillna(0, inplace=True)
+    
+    #for idx, row in unmatched_pivot.iterrows():
+     #   date = row['date']
+      #  mask = matched_pivot['date'] == date
+        
+       # for col in unmatched_pivot.columns:
+        #    if col != ['date']:
+         #       try:
+          #          matched_pivot.loc[mask, col] += row[col]
+           #     except:
+            #        continue
+                
+    matched_pivot.set_index(['date', 'district'], inplace=True)
+    matched_pivot = matched_pivot.div(matched_pivot.sum(axis=1), axis=0).reset_index()
+    matched_pivot.columns = ['nlp_' + str(col) if col not in ['date', 'district'] else col for col in matched_pivot.columns]
+    matched_pivot['year_month'] = matched_pivot['date']#.apply(lambda x: x[0:7])
+    matched_pivot = matched_pivot.drop(columns=['date'])
+
+    return(matched_pivot)
+
 
 #This consolidates the food_crises metrics and all_africa_southsudan dataset, ready to be fed into the model.
-def consolidate_data(southsudan: pd.DataFrame, crisis: pd.DataFrame, nlp):
+def consolidate_data(southsudan: pd.DataFrame, crisis: pd.DataFrame, nlp, name):
     crisis['date'] = crisis['date'].astype('str')
     crisis['date'] = crisis['date'].str[:7]
     southsudan['date'] = southsudan['date'].astype('str')
@@ -264,9 +300,13 @@ def consolidate_data(southsudan: pd.DataFrame, crisis: pd.DataFrame, nlp):
     output_df['country_code'] = np.where(output_df['country'].astype('str') == 'South Sudan', 1, 2)
     
     if nlp is not None and isinstance(nlp, pd.DataFrame):
-        nlp['date'] = nlp['date'].astype('str')
-        nlp['date'] = nlp['date'].str[:7]
-        output_df=output_df.merge(nlp, on='date')
+        if name == 'grouping':
+            nlp['year_month'] = nlp['year_month'].astype('str')
+            output_df = output_df.merge(nlp, on=['year_month', 'district'])
+        else:
+            nlp['date'] = nlp['date'].astype('str')
+            nlp['date'] = nlp['date'].str[:7]
+            output_df=output_df.merge(nlp, on='date')
         
     return(output_df)
 

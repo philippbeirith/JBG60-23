@@ -24,46 +24,45 @@ def test_random_forest_classification_performance(X, y, test_size=0.2, random_st
 
     # Split data into training and testing sets
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
-
     # Create and fit the RandomForestClassifier
     rf = RandomForestClassifier(n_estimators = 5000, random_state = 23, max_depth = 7)
+    #rf_classifier = RandomForestClassifier(n_estimators=5000, random_state=23)
+    #rf_classifier.fit(X_train, y_train)
     
-  
     # Use SelectFromModel with the fitted classifier
-    #sel = SelectFromModel(rf)
+    #sel = SelectFromModel(rf_classifier)
     
     #Print out selected rows
-    #feature_idx = sel.get_support()
+   # feature_idx = sel.get_support()
     #feature_name = X_train.columns[feature_idx]
     #print(feature_name)
+    
+    nlp_columns = [col for col in X.columns if col.startswith('nlp_')]
     
     custom_feature_list1 = ['district_code', 'centx', 'centy', 'cropland_pct', 'pop',
            'ruggedness_mean', 'pasture_pct', 'ipc_months_since_change',
            'ipc_lag_1', 'food_price_idx_lag_1', 'ipc_lag_3', 'ndvi_mean_lag_3',
            'rain_mean_lag_3', 'et_mean_lag_3', 'food_price_idx_lag_3', 'ipc_lag_6',
            'food_price_idx_lag_6', 'ipc_rolling_avg_3',
-           'food_price_idx_rolling_avg_3', 'food_price_idx_rolling_std_3', 'nlp_1', 'nlp_2', 'nlp_3', 'nlp_4', 'nlp_5', 'nlp_6', 'nlp_7']
+           'food_price_idx_rolling_avg_3', 'food_price_idx_rolling_std_3']
+    custom_feature_list1.extend(nlp_columns)
     
-    custom_feature_list2 = ['district_code', 'ipc_months_since_change',
-           'ipc_lag_1', 'ipc_lag_3', 
-           'ipc_lag_6',
-           'nlp_1', 'nlp_2', 'nlp_3', 'nlp_4', 'nlp_5', 'nlp_6', 'nlp_7']
-    
+    custom_feature_list2 = ['district_code', 'ipc_months_since_change', 'ipc_lag_1', 'ipc_lag_3', 'ipc_lag_6']
+    custom_feature_list2.extend(nlp_columns)
+
     custom_feature_list3 = ['district_code', 'ipc_months_since_change',
            'ipc_lag_1', 'ipc_lag_3', 'food_price_idx_lag_6', 'food_price_idx_rolling_avg_3', 'food_price_idx_rolling_std_3', 
-           'ipc_lag_6','food_price_idx_lag_1','food_price_idx_lag_3',
-           'nlp_1', 'nlp_2', 'nlp_3', 'nlp_4', 'nlp_5', 'nlp_6', 'nlp_7']
-    
+           'ipc_lag_6','food_price_idx_lag_1','food_price_idx_lag_3']
+    custom_feature_list3.extend(nlp_columns)
     custom_feature_list4 = ['district_code', 'ipc_months_since_change',
            'ipc_lag_1', 'ipc_lag_3', 'food_price_idx_lag_6', 'food_price_idx_rolling_avg_3', 'food_price_idx_rolling_std_3', 
-           'ipc_lag_6','food_price_idx_lag_1','food_price_idx_lag_3','ndvi_mean_lag_3',
-           'nlp_1', 'nlp_2', 'nlp_3', 'nlp_4', 'nlp_5', 'nlp_6', 'nlp_7']
-    X_train = X_train[custom_feature_list4]
-    X_test = X_test[custom_feature_list4]
-    #X_train = sel.transform(X_train)
-    #X_test = sel.transform(X_test)
+           'ipc_lag_6','food_price_idx_lag_1','food_price_idx_lag_3','ndvi_mean_lag_3']
+    X_train = X_train[custom_feature_list3]
+    X_test = X_test[custom_feature_list3]
+    #X_train =np.column_stack((X_train.iloc[:, 2], sel.transform(X_train))) 
+    #X_test = np.column_stack((X_test.iloc[:, 2], sel.transform(X_test)))
     print(X_train.shape)
-    print(X_train.shape)
+    print(X_test.shape)
     
     kfold_mean_accuracy = np.mean(cross_val_score(rf, X_train, y_train, cv=10))
     print('kfold mean accuracy: '+str(kfold_mean_accuracy))
@@ -99,20 +98,23 @@ def test_random_forest_classification_performance(X, y, test_size=0.2, random_st
 
 
     # Calculate accuracy per column 'district'
-    unique_districts = X_test['district_code'].unique()
     district_accuracies = {}  # Store accuracy per district in a dictionary
-    for district in unique_districts:
-        district_mask = X_test['district_code'] == district
-        district_y_true = y_test[district_mask]
-        district_y_pred = y_pred[district_mask]
-        district_accuracy = accuracy_score(district_y_true, district_y_pred)
-        print(f"Accuracy for District {district}: {district_accuracy}")
-        district_accuracies[district] = district_accuracy
+
+    try:
+        unique_districts = X_test.iloc[:,0].unique()
+
+        for district in unique_districts:
+            district_mask = X_test.iloc[:,0] == district
+            district_y_true = y_test[district_mask]
+            district_y_pred = y_pred[district_mask]
+            district_accuracy = accuracy_score(district_y_true, district_y_pred)
+            print(f"Accuracy for District {district}: {district_accuracy}")
+            district_accuracies[district] = district_accuracy
+    except:
+        pass
     
     # Create a DataFrame to store the accuracy rates
     district_accuracy = pd.DataFrame(list(district_accuracies.items()), columns=['District', 'Accuracy'])
-
-    
 
     importances = rf.feature_importances_
     indices = np.argsort(importances)
