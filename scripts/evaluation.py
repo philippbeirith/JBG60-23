@@ -1,3 +1,4 @@
+import shap
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -125,5 +126,15 @@ def test_random_forest_classification_performance(X, y, test_size=0.2, random_st
     plt.xlabel('Relative Importance')
     plt.show()
 
-    return rf, district_accuracy
+    shap.initjs()
+    
+    # Calculate SHAP values
+    
+    explainer = shap.TreeExplainer(rf)
+    shap_values = explainer.shap_values(X_test)
+
+    # Summarize the effects of features
+    shap_plot = shap.summary_plot(shap_values, X_test)
+
+    return rf, district_accuracy, shap_plot
 

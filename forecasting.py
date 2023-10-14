@@ -20,7 +20,6 @@ df_grouping = pd.read_csv('data/topics_group_summary_results.csv')
 
 #Modify datasets
 df_food_crises_cleaned = preprocessing.backfill_ipc(df_food_crises_cleaned)
-df_southsudan = preprocessing.sentiment_analysis(df_southsudan, 'paragraphs')
 
 #Augment
 df_food_crises_cleaned = preprocessing.calculate_crises_metrics(df_food_crises_cleaned)

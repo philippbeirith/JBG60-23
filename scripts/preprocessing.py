@@ -117,12 +117,6 @@ def backfill_ipc(df: pd.DataFrame) -> pd.DataFrame:
     df["ipc"] = df["ipc"].fillna(method="bfill")
     return(df)
 
-# Apply sentiment analysis to each article within a column and set it to either 1 0 or -1
-def sentiment_analysis(df: pd.DataFrame, column: str) -> pd.DataFrame:
-    df["sentiment"] = df[column].apply(lambda x: TextBlob(x).sentiment.polarity)
-    df["sentiment"] = df["sentiment"].apply(lambda x: 1 if x > 0 else 0 if x == 0 else -1)
-    return(df)
-
 # This helper function was taken from the 'predicting' jupyter notebook from https://github.com/GielJW/JBG060-DC3-23-24-public/tree/main
 def create_lag_df(df, columns, lag, difference=False, rolling=None, dropna=False):
     '''
