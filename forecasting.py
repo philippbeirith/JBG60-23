@@ -32,7 +32,7 @@ df_classifications = preprocessing.classification_prep(df_classifications, 'topi
 df_grouping = preprocessing.grouped_prep(df_grouping, df_food_crises_cleaned)
 
 #Consolidate
-dataset: pd.DataFrame = preprocessing.consolidate_data(df_southsudan, df_food_crises_cleaned, df_bert, 'bert')
+dataset: pd.DataFrame = preprocessing.consolidate_data(df_southsudan, df_food_crises_cleaned, df_grouping, 'grouping')
 
 #dataset = dataset[dataset['next_month_change']== 1].dropna()
 #Limit the data to be < 2015
@@ -45,15 +45,15 @@ dataset=dataset.dropna()
 district_accuracy = pd.DataFrame()
 evaluations = pd.DataFrame()
 
-model_lead_1, model_lead_1_district_accuracy, model_1_evaluation = evaluation.test_random_forest_classification_performance(dataset.drop(columns=['ipc_lead_1', 'ipc_lead_3', 'ipc_lead_6']), dataset['ipc_lead_1'], 'test', 1, test_size=0.3, random_state=23)
+model_lead_1, model_lead_1_district_accuracy, model_1_evaluation = evaluation.test_random_forest_classification_performance(dataset.drop(columns=['ipc_lead_1', 'ipc_lead_3', 'ipc_lead_6']), dataset['ipc_lead_1'], 'grouping', '1', random_state=23)
 district_accuracy = pd.concat([district_accuracy,model_lead_1_district_accuracy], ignore_index=True)
 evaluations = pd.concat([evaluations,model_1_evaluation], ignore_index=True)
 print('############################################################')
-model_lead_3, model_lead_3_district_accuracy, model_3_evaluation = evaluation.test_random_forest_classification_performance(dataset.drop(columns=['ipc_lead_1', 'ipc_lead_3', 'ipc_lead_6']), dataset['ipc_lead_3'], 'test', 3, test_size=0.3, random_state=23)
+model_lead_3, model_lead_3_district_accuracy, model_3_evaluation = evaluation.test_random_forest_classification_performance(dataset.drop(columns=['ipc_lead_1', 'ipc_lead_3', 'ipc_lead_6']), dataset['ipc_lead_3'], 'grouping', '3', random_state=23)
 district_accuracy = pd.concat([district_accuracy,model_lead_3_district_accuracy], ignore_index=True)
 evaluations = pd.concat([evaluations,model_3_evaluation], ignore_index=True)
 print('############################################################')
-model_lead_6, model_lead_6_district_accuracy, model_6_evaluation = evaluation.test_random_forest_classification_performance(dataset.drop(columns=['ipc_lead_1', 'ipc_lead_3', 'ipc_lead_6']), dataset['ipc_lead_6'], 'test', 6, test_size=0.3, random_state=23)
+model_lead_6, model_lead_6_district_accuracy, model_6_evaluation = evaluation.test_random_forest_classification_performance(dataset.drop(columns=['ipc_lead_1', 'ipc_lead_3', 'ipc_lead_6']), dataset['ipc_lead_6'], 'grouping', '6', random_state=23)
 district_accuracy = pd.concat([district_accuracy,model_lead_6_district_accuracy], ignore_index=True)
 evaluations = pd.concat([evaluations,model_6_evaluation], ignore_index=True)
 

@@ -6,7 +6,7 @@ from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_s
                              roc_auc_score, classification_report, confusion_matrix)
 from sklearn.model_selection import train_test_split, cross_val_score, TimeSeriesSplit
 
-def test_random_forest_classification_performance(X, y, test_type, prediction_target, test_size=0.2, random_state=None):
+def test_random_forest_classification_performance(X, y, test_type, prediction_target, random_state=None):
     """
     Train and test a Random Forest classifier, then print its performance metrics.
 
@@ -36,7 +36,7 @@ def test_random_forest_classification_performance(X, y, test_type, prediction_ta
            'ipc_lag_6','food_price_idx_lag_1','food_price_idx_lag_3']
     custom_feature_list3.extend(nlp_columns)
 
-    X = X[custom_feature_list3]
+    X = X[custom_feature_list1]
     
     # Split data into training and testing sets
     tscv = TimeSeriesSplit(10)
@@ -66,7 +66,7 @@ def test_random_forest_classification_performance(X, y, test_type, prediction_ta
         # Store metrics for this split
         current_metrics = {
             'test_type': test_type,
-            'prediction target': prediction_target,
+            'prediction_target': prediction_target,
             'k_fold': k_fold,
             'Accuracy': accuracy_score(y_test, y_pred),
             'Precision (Weighted)': precision_score(y_test, y_pred, average='weighted'),

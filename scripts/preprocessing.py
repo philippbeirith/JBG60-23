@@ -262,30 +262,30 @@ def grouped_prep(df, ipc):
     
     merged_df['unmatched'] = merged_df['district'].isna()
     
-    #unmatched = merged_df[merged_df['unmatched'] == True].groupby(['date', 'category']).count().reset_index()
+    unmatched = merged_df[merged_df['unmatched'] == True].groupby(['date', 'category']).count().reset_index()
     matched = merged_df[merged_df['unmatched'] == False].groupby(['date', 'category', 'district']).count().reset_index()
     
-    #unmatched_pivot = unmatched.pivot(index='date', columns='category', values='summary').reset_index()
-    #unmatched_pivot.fillna(0, inplace=True)
+    unmatched_pivot = unmatched.pivot(index='date', columns='category', values='summary').reset_index()
+    unmatched_pivot.fillna(0, inplace=True)
     
     matched_pivot = matched.pivot_table(index=['date', 'district'], columns='category', values='summary').reset_index()
     matched_pivot.fillna(0, inplace=True)
     
-    #for idx, row in unmatched_pivot.iterrows():
-     #   date = row['date']
-      #  mask = matched_pivot['date'] == date
+    for idx, row in unmatched_pivot.iterrows():
+        date = row['date']
+        mask = matched_pivot['date'] == date
         
-       # for col in unmatched_pivot.columns:
-        #    if col != ['date']:
-         #       try:
-          #          matched_pivot.loc[mask, col] += row[col]
-           #     except:
-            #        continue
+        for col in unmatched_pivot.columns:
+            if col != ['date', 'district']:
+                try:
+                    matched_pivot.loc[mask, col] += row[col]
+                except:
+                    continue
                 
     matched_pivot.set_index(['date', 'district'], inplace=True)
     matched_pivot = matched_pivot.div(matched_pivot.sum(axis=1), axis=0).reset_index()
     matched_pivot.columns = ['nlp_' + str(col) if col not in ['date', 'district'] else col for col in matched_pivot.columns]
-    matched_pivot['year_month'] = matched_pivot['date']#.apply(lambda x: x[0:7])
+    matched_pivot['year_month'] = matched_pivot['date'].apply(lambda x: x[0:7])
     matched_pivot = matched_pivot.drop(columns=['date'])
 
     return(matched_pivot)
