@@ -103,7 +103,7 @@ def test_random_forest_classification_performance(X, y, test_size=0.2, random_st
 
     try:
         unique_districts = X_test.iloc[:,0].unique()
-
+        
         for district in unique_districts:
             district_mask = X_test.iloc[:,0] == district
             district_y_true = y_test[district_mask]
@@ -126,15 +126,42 @@ def test_random_forest_classification_performance(X, y, test_size=0.2, random_st
     plt.xlabel('Relative Importance')
     plt.show()
 
+    def mean_absolute_value(arr):
+        absolute_values = [abs(x) for x in arr]
+        total = sum(absolute_values)
+        mean = total / len(arr)
+        return mean
+    
     shap.initjs()
     
     # Calculate SHAP values
-    
     explainer = shap.TreeExplainer(rf)
     shap_values = explainer.shap_values(X_test)
+    
+    value = 0
+    col_num = 10
+    sums_list = []
+    col_indicators = []
 
-    # Summarize the effects of features
-    shap_plot = shap.summary_plot(shap_values, X_test)
+    rows, cols = shap_values[0].shape
+    while col_num < cols:
+        col_indicators.append(col_num)
+        col_num += 1
 
-    return rf, district_accuracy, shap_plot
+    while value < len(shap_values):
+        
+        shap_values[value] = shap_values[value][:, col_indicators]
+        
+        row = 0
+        while row < len(col_indicators):
+            shap_values[value][:, row] = mean_absolute_value(shap_values[value][:, row])
+            row += 1
+            
+        sum_zero = sum(shap_values[value][0])
+        sums_list.append(round(sum_zero, 2))
+        value += 1
+    
+    district_accuracy = 1
+
+    return rf, district_accuracy, sums_list
 

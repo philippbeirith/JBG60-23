@@ -1,6 +1,5 @@
 #Import  libraries
 import pandas as pd
-from textblob import TextBlob
 import numpy as np
 
 # Calculates delta values for the ipc column based on district and fills in nan values with 0
