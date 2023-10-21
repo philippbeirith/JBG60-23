@@ -217,18 +217,14 @@ def calculate_crises_metrics(df: pd.DataFrame):
 
 #This section prepares the nlp data
 def bert_prep(df):
-    # Convert the 'date' column to a datetime object
     df['date'] = pd.to_datetime(df['date'])
     
-    # Extract year and month from the 'date' column
     df['year'] = df['date'].dt.year
     df['month'] = df['date'].dt.month
     
-    # Group by year, month, and category and count the number of articles
     grouped = df.groupby(['year', 'month', 'predictions'])['summary'].count().reset_index()
     grouped['date'] = pd.to_datetime(grouped['year'].astype(str) + '-' + grouped['month'].astype(str) + '-01')
 
-    # Pivot the table to have categories as columns and calculate the proportion
     pivot_table = pd.pivot_table(grouped, values='summary', index=['date'], columns='predictions', fill_value=0)
     pivot_table = pivot_table.div(pivot_table.sum(axis=1), axis=0).reset_index()
     pivot_table = pivot_table.fillna(0)
@@ -254,6 +250,7 @@ def classification_prep(df, col):
     
     return(pivot_table)
 
+    
 def grouped_prep(df, ipc):
     merged_df = df.merge(ipc, left_on=['location_new', 'date'], right_on=['district', 'year_month'], how='left')
     
@@ -262,31 +259,18 @@ def grouped_prep(df, ipc):
     
     merged_df['unmatched'] = merged_df['district'].isna()
     
-    unmatched = merged_df[merged_df['unmatched'] == True].groupby(['date', 'category']).count().reset_index()
     matched = merged_df[merged_df['unmatched'] == False].groupby(['date', 'category', 'district']).count().reset_index()
-    
-    unmatched_pivot = unmatched.pivot(index='date', columns='category', values='summary').reset_index()
-    unmatched_pivot.fillna(0, inplace=True)
     
     matched_pivot = matched.pivot_table(index=['date', 'district'], columns='category', values='summary').reset_index()
     matched_pivot.fillna(0, inplace=True)
-    
-    for idx, row in unmatched_pivot.iterrows():
-        date = row['date']
-        mask = matched_pivot['date'] == date
-        
-        for col in unmatched_pivot.columns:
-            if col != ['date', 'district']:
-                try:
-                    matched_pivot.loc[mask, col] += row[col]
-                except:
-                    continue
-                
     matched_pivot.set_index(['date', 'district'], inplace=True)
-    matched_pivot = matched_pivot.div(matched_pivot.sum(axis=1), axis=0).reset_index()
     matched_pivot.columns = ['nlp_' + str(col) if col not in ['date', 'district'] else col for col in matched_pivot.columns]
-    matched_pivot['year_month'] = matched_pivot['date'].apply(lambda x: x[0:7])
+
+    matched_pivot['year_month'] = matched_pivot.index.get_level_values('date').astype(str).str[0:7]
+
+    matched_pivot.reset_index(inplace=True)
     matched_pivot = matched_pivot.drop(columns=['date'])
+
 
     return(matched_pivot)
 

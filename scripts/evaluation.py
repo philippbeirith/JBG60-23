@@ -61,7 +61,7 @@ def test_random_forest_classification_performance(X, y, test_type, prediction_ta
         rf.fit(X_train, y_train)
         # Make predictions
         y_pred = rf.predict(X_test)
-        y_pred_prob = rf.predict_proba(X_test)[:, 1]  # Probability estimates for the positive class
+        y_pred_prob = rf.predict_proba(X_test)[:, 1]
         
         # Store metrics for this split
         current_metrics = {
@@ -73,12 +73,12 @@ def test_random_forest_classification_performance(X, y, test_type, prediction_ta
             'Recall (Weighted)': recall_score(y_test, y_pred, average='weighted'),
             'F1 Score (Weighted)': f1_score(y_test, y_pred, average='weighted')
         }
-        current_metrics_df = pd.DataFrame([current_metrics])  # Note the list around the dictionary
+        current_metrics_df = pd.DataFrame([current_metrics]) 
         split_metrics = pd.concat([split_metrics,current_metrics_df], ignore_index=True)
         
         # Calculate district accuracies for this split
         district_accuracies = {}
-        unique_districts = X_test['district_code'].unique()  # Assuming 'district_code' is in X_test
+        unique_districts = X_test['district_code'].unique()
         
         for district in unique_districts:
             district_mask = X_test['district_code'] == district
@@ -90,7 +90,6 @@ def test_random_forest_classification_performance(X, y, test_type, prediction_ta
         
             all_district_accuracies.append((test_type, prediction_target, k_fold, district, district_accuracy))
     
-    # Create a DataFrame to store the accuracy rates
     district_accuracy_df = pd.DataFrame(all_district_accuracies, columns=['Test_Type', 'Prediction_Target','K_Fold', 'District', 'Accuracy'])
 
     importances = rf.feature_importances_
