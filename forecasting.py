@@ -59,8 +59,8 @@ model_lead_6, model_lead_6_district_accuracy, model_6_evaluation = evaluation.te
 district_accuracy = pd.concat([district_accuracy,model_lead_6_district_accuracy], ignore_index=True)
 evaluations = pd.concat([evaluations,model_6_evaluation], ignore_index=True)
 
-evaluations.to_csv('/Users/philippbeirith/Downloads/evaluations.csv')
-district_accuracy.to_csv('/Users/philippbeirith/Downloads/district_accuracy.csv')
+evaluations.to_csv('/evaluations.csv')
+district_accuracy.to_csv('/district_accuracy.csv')
 
 
 
@@ -84,7 +84,7 @@ district_accuracy = pd.concat([district_accuracy,model_lead_6_district_accuracy]
 evaluations = pd.concat([evaluations,model_6_evaluation], ignore_index=True)
 
 
-evaluations.to_csv('/Users/philippbeirith/Downloads/evaluations_test.csv')
-district_accuracy.to_csv('/Users/philippbeirith/Downloads/district_accuracy_test.csv')
+evaluations.to_csv('/evaluations_test.csv')
+district_accuracy.to_csv('/district_accuracy_test.csv')
 
 
