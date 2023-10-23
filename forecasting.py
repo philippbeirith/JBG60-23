@@ -21,7 +21,7 @@ df_grouping = pd.read_csv('data/topics_group_summary_results.csv')
 
 #Modify datasets
 df_food_crises_cleaned = preprocessing.backfill_ipc(df_food_crises_cleaned)
-df_southsudan = preprocessing.sentiment_analysis(df_southsudan, 'paragraphs')
+#df_southsudan = preprocessing.sentiment_analysis(df_southsudan, 'paragraphs')
 
 #Augment
 df_food_crises_cleaned = preprocessing.calculate_crises_metrics(df_food_crises_cleaned)
@@ -69,7 +69,25 @@ district_accuracy = pd.DataFrame()
 evaluations = pd.DataFrame()
 
 
-dataset: pd.DataFrame = preprocessing.consolidate_data(df_southsudan, df_food_crises_cleaned, None, 'bert')
+dataset: pd.DataFrame = preprocessing.consolidate_data(df_southsudan, df_food_crises_cleaned, df_classifications, 'bert')
+
+model_lead_1, model_lead_1_district_accuracy, model_1_evaluation = evaluation_test.test_random_forest_classification_performance_ts(dataset, 'Baseline', 'ipc_lead_1', random_state=23)
+district_accuracy = pd.concat([district_accuracy,model_lead_1_district_accuracy], ignore_index=True)
+evaluations = pd.concat([evaluations,model_1_evaluation], ignore_index=True)
+print('############################################################')
+model_lead_3, model_lead_3_district_accuracy, model_3_evaluation = evaluation_test.test_random_forest_classification_performance_ts(dataset, 'Baseline', 'ipc_lead_3', random_state=23)
+district_accuracy = pd.concat([district_accuracy,model_lead_3_district_accuracy], ignore_index=True)
+evaluations = pd.concat([evaluations,model_3_evaluation], ignore_index=True)
+print('############################################################')
+model_lead_6, model_lead_6_district_accuracy, model_6_evaluation = evaluation_test.test_random_forest_classification_performance_ts(dataset, 'Baseline', 'ipc_lead_6', random_state=23)
+district_accuracy = pd.concat([district_accuracy,model_lead_6_district_accuracy], ignore_index=True)
+evaluations = pd.concat([evaluations,model_6_evaluation], ignore_index=True)
+
+
+evaluations.to_csv('/evaluations_test.csv')
+district_accuracy.to_csv('/district_accuracy_test.csv')
+
+
 
 model_lead_1, model_lead_1_district_accuracy, model_1_evaluation = evaluation_test.test_random_forest_classification_performance_ts(dataset, 'Baseline', 'ipc_lead_1', random_state=23)
 district_accuracy = pd.concat([district_accuracy,model_lead_1_district_accuracy], ignore_index=True)

@@ -227,9 +227,20 @@ def bert_prep(df):
     
     return pivot_table
 
+def convert_to_datetime(date_str):
+    try:
+        year_month = date_str.split('_')
+        standardized_date_str = f"{year_month[0]}-{year_month[1]}-01" 
+
+        # Now convert to datetime
+        return pd.to_datetime(standardized_date_str, format='%Y-%m-%d')
+    
+    except:
+        return None
+
 def classification_prep(df, col):
     # Convert the 'date' column to a datetime object
-    df['date'] = pd.to_datetime(df['date'])
+    df['date'] = df['date'].apply(convert_to_datetime)
     
     grouped = df.groupby(['date', col])['summary'].count().reset_index()
     grouped['date'] = pd.to_datetime(grouped['date'].dt.year.astype(str) + '-' + grouped['date'].dt.month.astype(str) + '-01')
